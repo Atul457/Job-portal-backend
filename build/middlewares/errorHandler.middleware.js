@@ -12,19 +12,19 @@ import { apiUtils } from "../utils/api.util.js";
 const errorHandlerMiddleware = (error, req, res, next) => {
     const response = {
         message: CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG,
-        status: CONSTANTS.HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR,
+        statusCode: CONSTANTS.HTTP_RESPONSE_CODE.INTERNAL_SERVER_ERROR,
     };
     if (error instanceof ErrorHandlingService) {
         response.message = error.message;
-        response.status = error.status;
+        response.statusCode = error.status;
     }
     if (error instanceof Joi.ValidationError) {
         (response.message = error.message),
-            (response.status = CONSTANTS.HTTP_RESPONSE_CODE.BAD_REQUEST);
+            (response.statusCode = CONSTANTS.HTTP_RESPONSE_CODE.BAD_REQUEST);
     }
     if (0)
         next();
-    res.status(response.status)
+    res.status(response.statusCode)
         .json(apiUtils.generateRes(Object.assign(Object.assign({}, response), { status: false })));
 };
 export { errorHandlerMiddleware };

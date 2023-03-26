@@ -1,9 +1,10 @@
 // Third party
 import cors from "cors";
 import Express, { json } from "express";
+import * as express from "express";
+import { envConfig } from "./env.config.js";
 
-// Imports
-import { app } from "../server.js";
+// Third party
 
 // Configs
 import connectMongoDB from "./mongo.config.js";
@@ -22,6 +23,14 @@ import { multerUploadPath } from "./multer.config.js";
  */
 const initApp = async () => {
 
+  // Mongo connection
+  const connectionRes = await connectMongoDB();
+  if (!connectionRes.status) return console.log(connectionRes.message);
+
+  // Constants
+  const app = express.default();
+  const APP_PORT = envConfig?.APP_PORT ? Number(envConfig.APP_PORT) : 3001;
+  
   // Middlewares
   app.use(cors());
   app.use(json());
@@ -30,16 +39,15 @@ const initApp = async () => {
   // Index test route
   app.use(routers.expressRouter)
 
-  // Mongo connection
-  const connectionRes = await connectMongoDB();
-  if (!connectionRes.status) return console.log(connectionRes.message);
+  // Listeners
+  app.listen(APP_PORT);
 
   // Routes that need db, eg: user router
   app.use("/user", routers.userRouter);
 
   // Middleware
   app.use(errorHandlerMiddleware);
-  
+
 };
 
 export { initApp };

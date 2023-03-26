@@ -42,6 +42,7 @@ const queue = (args) => __awaiter(void 0, void 0, void 0, function* () {
                         status = true;
                     }
                     catch (error) {
+                        console.log(error);
                         message = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG;
                         status = false;
                     }
@@ -57,7 +58,7 @@ const queue = (args) => __awaiter(void 0, void 0, void 0, function* () {
                 }
             }));
         });
-        // Queu handler
+        // Queue handler
         const queueHandler = () => __awaiter(void 0, void 0, void 0, function* () {
             var _b;
             front += 1;
