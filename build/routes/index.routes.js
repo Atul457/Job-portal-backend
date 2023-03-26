@@ -1,7 +1,6 @@
 // Third party
 import express from "express";
 // Router imports
-import { converterRouter } from "./converter.routes.js";
 import { userRouter } from "./user.routes.js";
 // Constants imports
 import { CONSTANTS } from "../utils/constants.js";
@@ -12,7 +11,6 @@ expressRouter.get("/", (req, res) => {
 });
 // Root route
 const routers = {
-    converterRouter,
     userRouter,
     expressRouter,
 };

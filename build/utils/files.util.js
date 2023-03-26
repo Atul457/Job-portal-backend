@@ -11,7 +11,7 @@ const splitFileNameAndExt = (fullFileName, addDotToExtension) => {
         extension: "",
     };
     let lastStrSegment = (_a = valueToReturn.fileName) === null || _a === void 0 ? void 0 : _a.split("/");
-    lastStrSegment = lastStrSegment[lastStrSegment.length - 1];
+    lastStrSegment = lastStrSegment === null || lastStrSegment === void 0 ? void 0 : lastStrSegment[(lastStrSegment === null || lastStrSegment === void 0 ? void 0 : lastStrSegment.length) - 1];
     const tempFileNameSegments = (_b = lastStrSegment === null || lastStrSegment === void 0 ? void 0 : lastStrSegment.split(".")) !== null && _b !== void 0 ? _b : [];
     valueToReturn.fileName = tempFileNameSegments.slice(0, tempFileNameSegments.length - 1).join("-");
     valueToReturn.extension =
