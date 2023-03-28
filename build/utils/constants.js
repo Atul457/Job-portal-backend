@@ -10,6 +10,7 @@ const RESPONSE_MESSAGES = {
     USER_ALREADY_EXIST_WITH_EMAIL: "User already exists",
     USER_NOT_FOUND: "User not found",
     UN_AUTHORIZED: "Unauthorized",
+    INVALID_PASSWORD: "Password in incorrect",
     NO_FILE_SENT: "No file was sent",
     INVALID_DATA_SENT: "Invalid data sent"
 };
@@ -21,6 +22,16 @@ const HTTP_RESPONSE_CODE = {
     INTERNAL_SERVER_ERROR: 500,
     BAD_REQUEST: 400,
 };
+const FILE_EXTENSIONS = {
+    JPG: "jpg",
+    JPG_WITH_DOT: ".jpg",
+    JPEG: "jpeg",
+    JPEG_WITH_DOT: ".jpeg",
+    PNG: "png",
+    PNG_WITH_DOT: ".png",
+    WEBP: "webp",
+    WEBP_WITH_DOT: ".webp"
+};
 const TABLES = {
     USERS: "users",
 };
@@ -29,5 +40,6 @@ export const CONSTANTS = {
     RESPONSE_MESSAGES,
     HTTP_RESPONSE_CODE,
     TABLES,
+    FILE_EXTENSIONS
 };
 //# sourceMappingURL=constants.js.map

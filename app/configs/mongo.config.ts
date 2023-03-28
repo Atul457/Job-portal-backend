@@ -35,8 +35,11 @@ const connectMongoDB: IConnectToDbFn = async () => {
     console.log("MongoDb database connected");
 
     return { status: true };
-    
+
   } catch (error: any) {
+
+    console.log(error?.message ?? error);
+
     return {
       status: false,
       message:

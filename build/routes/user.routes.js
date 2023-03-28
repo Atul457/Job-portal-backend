@@ -7,5 +7,6 @@ const userRouter = express.Router();
 // Routes
 // Auth routes
 userRouter.post("/signUp", userController.signUp);
+userRouter.post("/signIn", userController.signIn);
 export { userRouter };
 //# sourceMappingURL=user.routes.js.map

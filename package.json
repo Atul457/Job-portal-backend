@@ -14,7 +14,8 @@
     "dev": "nodemon ./app/server.ts",
     "build": "tsc",
     "lint": "eslint app/**/*.ts",
-    "format": "eslint app/**/*.ts --fix"
+    "format": "eslint app/**/*.ts --fix",
+    "killNode": "taskkill /im node.exe /F"
   },
   "author": "Rutuja Singh & Atul Singh",
   "license": "ISC",
