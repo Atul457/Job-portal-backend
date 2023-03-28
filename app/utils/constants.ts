@@ -8,8 +8,8 @@ const APP_LOG_MESSAGES = {
 
 const RESPONSE_MESSAGES = {
   SOMETHING_WENT_WRONG: "Something went wrong",
-  USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL: "User already exists with same email",
-  USER_ALREADY_EXIST_WITH_EMAIL_WITH_PHONE: "User already exists with same phone number",
+  USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL: "User already exists same email",
+  USER_ALREADY_EXIST_WITH_EMAIL_WITH_PHONE: "User already exists same phone number",
   USER_NOT_FOUND: "User not found",
   UN_AUTHORIZED: "Unauthorized",
   INVALID_PASSWORD: "Password in incorrect",
