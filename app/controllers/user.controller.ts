@@ -38,10 +38,18 @@ const signUp = async (
 
     if (error) throw error;
 
-    const { email, password, name } = req.body;
-    const response = await userExists({ email });
+    const { email, password, name, phone } = req.body;
+    const userWithSameEmailExists = await userExists({ email });
+    const userWithSamePhoneExists = await userExists({ phone });
 
-    if (response.status) throw ErrorHandlingService.userAlreadyExists();
+    if (userWithSameEmailExists.status)
+      throw ErrorHandlingService.userAlreadyExists({
+        message: RESPONSE_MESSAGES.USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL
+      });
+    else if (userWithSamePhoneExists.status)
+      throw ErrorHandlingService.userAlreadyExists({
+        message: RESPONSE_MESSAGES.USER_ALREADY_EXIST_WITH_EMAIL_WITH_PHONE
+      });
 
     const hashedPassword = bcrypt.hashSync(
       password,
@@ -51,6 +59,7 @@ const signUp = async (
     const insertRes = await collections.users?.insertOne({
       name,
       email,
+      phone,
       password: hashedPassword,
       created_at: new Date(Date.now()).toUTCString(),
       updated_at: new Date(Date.now()).toUTCString()
@@ -128,10 +137,11 @@ const signIn = async (
  * @returns Object with status in boolean
  */
 const userExists: IUserExistsFn = async (args) => {
-  const { email, password } = args;
+  const { email, password, phone } = args;
 
   const user = await collections.users?.findOne({
-    email,
+    ...(email && { email }),
+    ...(phone && { phone }),
     ...(password && { password }),
   });
 
