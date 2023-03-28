@@ -37,10 +37,22 @@ type ITypeCheckKeys = (value: any) => boolean;
 
 // UserController
 
-type IUserExistsFn = (args: {
-  email: string;
-  password?: string;
-}) => Promise<{ status: boolean; doc: mongoTypes.Document | null | undefined }>;
+type IUserExistsArgsWithPhone = {
+  phone: string,
+  password?: string,
+  email?: string
+}
+
+type IUserExistsArgsWithEmail = {
+  email: string,
+  password?: string,
+  phone?: string
+}
+
+type IUserExistsFn = (
+  args: IUserExistsArgsWithPhone
+    | IUserExistsArgsWithEmail
+) => Promise<{ status: boolean; doc: mongoTypes.Document | null | undefined }>;
 
 
 type IQueueRes = {

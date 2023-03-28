@@ -13,7 +13,7 @@ class ErrorHandlingService {
     }
     static userAlreadyExists(args) {
         let { message, status } = args !== null && args !== void 0 ? args : {};
-        message = message !== null && message !== void 0 ? message : RESPONSE_MESSAGES.USER_ALREADY_EXIST;
+        message = message !== null && message !== void 0 ? message : RESPONSE_MESSAGES.USER_ALREADY_EXIST_WITH_EMAIL;
         status = status !== null && status !== void 0 ? status : 400;
         return new ErrorHandlingService(status, message);
     }

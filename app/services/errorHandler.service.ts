@@ -20,7 +20,7 @@ class ErrorHandlingService {
 
   static userAlreadyExists(args?: IErrorHandlerServiceArgs) {
     let { message, status } = args ?? {}
-    message = message ?? RESPONSE_MESSAGES.USER_ALREADY_EXIST
+    message = message ?? RESPONSE_MESSAGES.USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL
     status = status ?? 400
     return new ErrorHandlingService(status, message);
   }

@@ -7,7 +7,7 @@ const APP_LOG_MESSAGES = {
 };
 const RESPONSE_MESSAGES = {
     SOMETHING_WENT_WRONG: "Something went wrong",
-    USER_ALREADY_EXIST: "User already exists",
+    USER_ALREADY_EXIST_WITH_EMAIL: "User already exists",
     USER_NOT_FOUND: "User not found",
     UN_AUTHORIZED: "Unauthorized",
     NO_FILE_SENT: "No file was sent",
