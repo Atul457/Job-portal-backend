@@ -118,8 +118,7 @@ const signIn = async (
       statusCode: CONSTANTS.HTTP_RESPONSE_CODE.OK,
       status: true,
       data: {
-        email,
-        token
+        email, name: user.doc?.name ?? "", token
       }
     })
 
