@@ -206,10 +206,29 @@ const getJobs = async (
             },
             { $limit: limit },
             {
-                $project: {
-                    company_id: 0
+                $lookup: {
+                    from: CONSTANTS.TABLES.COMPANIES,
+                    localField: "company_id",
+                    foreignField: "_id",
+                    as: "company"
                 }
-            }
+            },
+            {
+                $unwind: "$company"
+            },
+            {
+                $addFields: {
+                    company_name: "$company.company_name",
+                    company_location: "$company.company_location"
+                }
+            },
+            {
+                $project: {
+                    "company": 0,
+                    "deleted": 0,
+                    "company_id": 0,
+                }
+            },
         ]).toArray() ?? [];
 
         const responseToSend = apiUtils.generateRes({
