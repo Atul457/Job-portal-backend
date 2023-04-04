@@ -1,0 +1,1 @@
+{"version":3,"file":"cloud.routes.js","sourceRoot":"","sources":["../../app/routes/cloud.routes.ts"],"names":[],"mappings":"AAAA,cAAc;AACd,OAAO,OAAO,MAAM,SAAS,CAAC;AAE9B,cAAc;AACd,OAAO,EAAE,eAAe,EAAE,MAAM,oCAAoC,CAAC;AAErE,YAAY;AACZ,MAAM,WAAW,GAAG,OAAO,CAAC,MAAM,EAAE,CAAC;AAErC,SAAS;AACT,WAAW,CAAC,IAAI,CAAC,aAAa,EAAE,eAAe,CAAC,UAAU,CAAC,CAAC;AAE5D,OAAO,EAAE,WAAW,EAAE,CAAC"}

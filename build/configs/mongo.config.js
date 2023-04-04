@@ -18,21 +18,26 @@ const collections = {};
  * @info Creates connection to mongo db
  */
 const connectMongoDB = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     console.log("Establishing mongo db connection...");
     try {
         const client = new MongoClient(envConfig.MONGODB_CONNECTION_STR);
         yield client.connect();
         const db = client.db(envConfig.MONGO_DB_NAME);
         const usersCollection = db.collection(CONSTANTS.TABLES.USERS);
+        const companiesCollection = db.collection(CONSTANTS.TABLES.COMPANIES);
+        const jobsCollection = db.collection(CONSTANTS.TABLES.JOBS);
         collections.users = usersCollection;
+        collections.companies = companiesCollection;
+        collections.jobs = jobsCollection;
         console.log("MongoDb database connected");
         return { status: true };
     }
     catch (error) {
+        console.log((_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : error);
         return {
             status: false,
-            message: (_a = error === null || error === void 0 ? void 0 : error.mesage) !== null && _a !== void 0 ? _a : CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG,
+            message: (_b = error === null || error === void 0 ? void 0 : error.mesage) !== null && _b !== void 0 ? _b : CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG,
         };
     }
 });

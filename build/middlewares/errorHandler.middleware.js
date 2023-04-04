@@ -4,6 +4,7 @@ import { CONSTANTS } from "../utils/constants.js";
 import { ErrorHandlingService } from "../services/errorHandler.service.js";
 // Third party
 import Joi from "joi";
+import Jwt from "jsonwebtoken";
 // Utils
 import { apiUtils } from "../utils/api.util.js";
 /**
@@ -21,6 +22,10 @@ const errorHandlerMiddleware = (error, req, res, next) => {
     if (error instanceof Joi.ValidationError) {
         (response.message = error.message),
             (response.statusCode = CONSTANTS.HTTP_RESPONSE_CODE.BAD_REQUEST);
+    }
+    if (error instanceof Jwt.JsonWebTokenError) {
+        (response.message = error.message),
+            (response.statusCode = CONSTANTS.HTTP_RESPONSE_CODE.UNAUTHORIZED);
     }
     if (0)
         next();

@@ -6,13 +6,33 @@ const APP_LOG_MESSAGES = {
     FILE_CONVERTED_SUCCESSFULLY: "File converted successfully"
 };
 const RESPONSE_MESSAGES = {
-    SOMETHING_WENT_WRONG: "Something went wrong",
-    USER_ALREADY_EXIST_WITH_EMAIL: "User already exists",
-    USER_NOT_FOUND: "User not found",
     UN_AUTHORIZED: "Unauthorized",
-    INVALID_PASSWORD: "Password in incorrect",
+    JOB_NOT_FOUND: "Job not found",
+    USER_NOT_FOUND: "User not found",
     NO_FILE_SENT: "No file was sent",
-    INVALID_DATA_SENT: "Invalid data sent"
+    LOGGED_OUT: "Logged out successfully",
+    INVALID_DATA_SENT: "Invalid data sent",
+    COMPANY_NOT_FOUND: "Company not found",
+    JOB_DELETED: "Job deleted successfully",
+    JOB_CREATED: "Job created successfully",
+    INVALID_USER: "You are not a valid user",
+    NO_COMPANIES_FOUND: "No companies found",
+    INVALID_PASSWORD: "Password in incorrect",
+    SOMETHING_WENT_WRONG: "Something went wrong",
+    COMPANY_DELETED: "Company deleted successfully",
+    PROFILE_UPDATED: "Profile updated successfully",
+    COMPANY_CREATED: "Company created successfully",
+    COMPANY_UPDATED: "Company updated successfully",
+    PASSWORD_UPDATED: "Password updated successfully",
+    INVALID_AUTHORIZATION_HEADER: "Authorization header is invalid",
+    AUTHORIZATION_HEADER_NOT_SENT: "Authorization header not sent",
+    USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL: "User already exists same email",
+    USER_ALREADY_EXIST_WITH_EMAIL_WITH_PHONE: "User already exists same phone number",
+    CAN_NOT_CREATE_COMPANY_USER_NOT_FOUND: "Unable to create company since you are not a authorized user",
+};
+const GOOGLE_CLOUD_CONSOLE = {
+    SCOPES: ['https://www.googleapis.com/auth/drive'],
+    FOLDER_ID: "1X1Te-mDWb8Z3vQ8W_1AOAmx6XhLYVmSx"
 };
 const HTTP_RESPONSE_CODE = {
     NOT_FOUND: 404,
@@ -34,12 +54,15 @@ const FILE_EXTENSIONS = {
 };
 const TABLES = {
     USERS: "users",
+    COMPANIES: "companies",
+    JOBS: "jobs"
 };
 export const CONSTANTS = {
     APP_LOG_MESSAGES,
     RESPONSE_MESSAGES,
     HTTP_RESPONSE_CODE,
     TABLES,
-    FILE_EXTENSIONS
+    FILE_EXTENSIONS,
+    GOOGLE_CLOUD_CONSOLE
 };
 //# sourceMappingURL=constants.js.map

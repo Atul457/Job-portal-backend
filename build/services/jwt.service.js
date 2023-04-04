@@ -4,7 +4,7 @@ import jsonwebtoken from "jsonwebtoken";
 import { envConfig } from "../configs/env.config.js";
 // Constants
 import { CONSTANTS } from "../utils/constants.js";
-const { sign, verify } = jsonwebtoken;
+const { sign, verify, decode } = jsonwebtoken;
 /**
  * @info Jwt service provides method related to jwt
  */
@@ -21,19 +21,27 @@ class JWTService {
         return { token };
     }
     static verifyJwtToken(token) {
-        var _a;
         let error = null;
         let decodedData;
         try {
             decodedData = verify(token, envConfig.JWT_SECRET_KEY);
-            return { decodedData };
+            return { decodedData: decodedData };
         }
         catch (err) {
-            error = (_a = err === null || err === void 0 ? void 0 : err.message) !== null && _a !== void 0 ? _a : CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG;
+            error = err;
             if (error)
                 return { error };
         }
         return { error: CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG };
+    }
+    static invalidateToken(token) {
+        const fiveYears = 5;
+        const payload = decode(token);
+        const newExpiration = new Date();
+        newExpiration.setDate(newExpiration.getFullYear() - fiveYears);
+        if (payload && typeof payload === "object") {
+            sign(Object.assign(Object.assign({}, payload), { exp: newExpiration.getTime() }), envConfig.JWT_SECRET_KEY);
+        }
     }
 }
 export { JWTService };
