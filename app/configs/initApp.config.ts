@@ -19,9 +19,6 @@ import { routers } from "../routes/index.routes.js";
 import { errorHandlerMiddleware } from "../middlewares/errorHandler.middleware.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
-// Paths
-import { multerUploadPath } from "./multer.config.js";
-
 /**
  * @info Adds routes and middlewares to app
  */
@@ -38,7 +35,6 @@ const initApp = async () => {
   // Middlewares
   app.use(cors());
   app.use(json());
-  app.use("/multer", Express.static(multerUploadPath))
 
   // Index test route
   app.use(routers.expressRouter)

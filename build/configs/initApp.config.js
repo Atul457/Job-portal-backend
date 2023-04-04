@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // Third party
 import cors from "cors";
-import Express, { json } from "express";
+import { json } from "express";
 import * as express from "express";
 // Configs
 import { envConfig } from "./env.config.js";
@@ -22,8 +22,6 @@ import { routers } from "../routes/index.routes.js";
 // Middleware imports
 import { errorHandlerMiddleware } from "../middlewares/errorHandler.middleware.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
-// Paths
-import { multerUploadPath } from "./multer.config.js";
 /**
  * @info Adds routes and middlewares to app
  */
@@ -38,7 +36,6 @@ const initApp = () => __awaiter(void 0, void 0, void 0, function* () {
     // Middlewares
     app.use(cors());
     app.use(json());
-    app.use("/multer", Express.static(multerUploadPath));
     // Index test route
     app.use(routers.expressRouter);
     // Listeners
