@@ -34,7 +34,7 @@ class ErrorHandlingService {
 
   static unAuthorized(args?: IErrorHandlerServiceArgs) {
     let { message, status } = args ?? {}
-    message = message ?? RESPONSE_MESSAGES.NO_FILE_SENT
+    message = message ?? RESPONSE_MESSAGES.UN_AUTHORIZED
     status = status ?? 403
     return new ErrorHandlingService(status, message);
   }

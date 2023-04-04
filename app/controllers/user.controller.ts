@@ -21,6 +21,7 @@ import { CONSTANTS } from "../utils/constants.js";
 
 // Helpers
 import { apiUtils } from "../utils/api.util.js";
+import { ObjectId } from "mongodb";
 
 const USER_SCHEMAS = schemas.user;
 const RESPONSE_MESSAGES = CONSTANTS.RESPONSE_MESSAGES;
@@ -65,7 +66,10 @@ const signUp = async (
       updated_at: new Date(Date.now()).toUTCString()
     });
 
-    const { token } = JWTService.createJwtToken({ email }, "2h");
+    const { token } = JWTService.createJwtToken({
+      email,
+      _id: insertRes?.insertedId
+    }, "1y");
 
     if (!insertRes?.acknowledged) throw new Error("Unable to create account");
 
@@ -106,13 +110,17 @@ const signIn = async (
 
     const passwordMatched = await bcrypt.compare(password, user?.doc?.password);
 
-    if (!passwordMatched) throw ErrorHandlingService.unAuthorized({
-      message: RESPONSE_MESSAGES.INVALID_PASSWORD
-    })
+    if (!passwordMatched)
+      throw ErrorHandlingService.unAuthorized({
+        message: RESPONSE_MESSAGES.INVALID_PASSWORD
+      })
+
+    if (!user.doc?._id) throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG)
 
     let { token } = JWTService.createJwtToken({
-      email
-    }, "2h");
+      email,
+      _id: user.doc?._id ?? ""
+    }, "1y");
 
     const response = apiUtils.generateRes({
       statusCode: CONSTANTS.HTTP_RESPONSE_CODE.OK,
@@ -128,6 +136,214 @@ const signIn = async (
     next(error);
   }
 }
+
+
+/**
+ * @info Returns profile details
+ */
+const getMyProfile = async (
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction
+) => {
+  try {
+
+    let { _id } = req.body;
+
+    if (!_id)
+      throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG)
+
+    let user = await collections.users?.findOne(
+      {
+        _id: new ObjectId(_id)
+      },
+      {
+        projection: {
+          password: 0,
+          created_at: 0,
+          updated_at: 0
+        }
+      }
+    );
+
+    if (!user) throw ErrorHandlingService.userNotFound();
+
+    const response = apiUtils.generateRes({
+      statusCode: CONSTANTS.HTTP_RESPONSE_CODE.OK,
+      status: true,
+      data: user
+    })
+
+    res.json(response)
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+const updateProfile = async (
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction
+) => {
+
+  try {
+
+    const { error } = USER_SCHEMAS.updateProfileSchema.validate(req.body);
+    const user_id = req.body?._id;
+
+    if (error) throw error;
+    if (!user_id) throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG)
+
+    const { name, phone } = req.body;
+
+    const result = await collections.users?.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          ...(name && { name }),
+          ...(phone && { phone }),
+          updated_at: new Date(Date.now()).toUTCString()
+        }
+      }
+    );
+
+    const user = await collections.users?.findOne({
+      _id: new ObjectId(user_id)
+    }, {
+      projection: {
+        password: 0,
+        created_at: 0,
+        updated_at: 0
+      }
+    })
+
+    if (!user || !result?.matchedCount) {
+      const responseToSend = apiUtils.generateRes({
+        status: false,
+        statusCode: 200,
+        message: RESPONSE_MESSAGES.USER_NOT_FOUND
+      })
+      return res.json(responseToSend);
+    }
+
+    if (result.modifiedCount) {
+      const responseToSend = apiUtils.generateRes({
+        status: true,
+        statusCode: 404,
+        message: RESPONSE_MESSAGES.PROFILE_UPDATED,
+        data: {
+          ...user
+        }
+      })
+      return res.json(responseToSend);
+    }
+
+    throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
+
+  } catch (error) {
+    next(error)
+  }
+
+}
+const updatePassword = async (
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction
+) => {
+
+  try {
+
+    const user_id = req.body?._id;
+    const email = req.body?.email;
+    const { error } = USER_SCHEMAS.updatePasswordSchema.validate(req.body);
+
+    if (error) throw error;
+
+    if (!user_id || !email)
+      throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG)
+
+    const { old_password, new_password } = req.body;
+
+    let user = await userExists({ email });
+
+    if (!user.status) throw ErrorHandlingService.userNotFound();
+
+    const passwordMatched = await bcrypt.compare(old_password, user?.doc?.password);
+
+    if (!passwordMatched)
+      throw ErrorHandlingService.unAuthorized({
+        message: RESPONSE_MESSAGES.INVALID_PASSWORD
+      })
+
+    const hashedPassword = bcrypt.hashSync(
+      new_password,
+      parseInt(envConfig.BCRYPT_SALT_ROUNDS)
+    );
+
+    const result = await collections.users?.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      {
+        $set: {
+          password: hashedPassword,
+          updated_at: new Date(Date.now()).toUTCString()
+        }
+      }
+    );
+
+    if (result?.modifiedCount) {
+      const responseToSend = apiUtils.generateRes({
+        status: true,
+        statusCode: 404,
+        message: RESPONSE_MESSAGES.PASSWORD_UPDATED
+      })
+      return res.json(responseToSend);
+    }
+
+    throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
+
+  } catch (error) {
+    next(error)
+  }
+
+}
+
+
+const logout = async (
+  req: Express.Request,
+  res: Express.Response,
+  next: Express.NextFunction
+) => {
+
+  try {
+
+    const { error } = USER_SCHEMAS.logoutSchema.validate(req.body);
+
+    if (error) throw error;
+
+    const { token } = req.body;
+
+    JWTService.invalidateToken(token)
+
+    const responseToSend = apiUtils.generateRes({
+      status: true,
+      statusCode: 404,
+      message: RESPONSE_MESSAGES.LOGGED_OUT
+    })
+
+    return res.json(responseToSend);
+
+  } catch (error) {
+    next(error)
+  }
+
+}
+
 
 
 /**
@@ -152,7 +368,12 @@ const userExists: IUserExistsFn = async (args) => {
 
 const userController = {
   signUp,
-  signIn
+  signIn,
+  logout,
+  userExists,
+  getMyProfile,
+  updateProfile,
+  updatePassword
 };
 
 export { userController };

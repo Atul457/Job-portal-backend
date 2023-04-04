@@ -55,6 +55,12 @@ type IUserExistsFn = (args:
 ) => Promise<{ status: boolean; doc: mongoTypes.Document | null | undefined }>;
 
 
+type ICompanyExistsFn = (
+  companyId: string,
+  userId: string
+) => Promise<{ status: boolean; doc: mongoTypes.Document | null | undefined }>;
+
+
 type IQueueRes = {
   status: boolean,
   task: any,
@@ -81,6 +87,8 @@ type IQueueArgs = {
 
 type IMongoCollection = {
   users?: mongoTypes.Collection;
+  companies?: mongoTypes.Collection;
+  jobs?: mongoTypes.Collection;
 };
 
 type IConnectToDbFn = () => Promise<{ status: boolean; message?: string }>;
@@ -133,7 +141,23 @@ type IErrorHandlerServiceArgs = undefined | null | {
 
 type IJwtCreateToken = { token: string }
 
-type IVerifyJwtToken = ({ error: string } | { decodedData: JwtPayload | string })
+type IVerifyJwtToken = ({
+  error: string,
+  decodedData?: {
+    data: {
+      _id: string,
+      email: string
+    }
+  }
+} | {
+  decodedData: {
+    data: {
+      _id: string,
+      email: string
+    }
+  },
+  error?: string
+})
 
 type IJwtTypes = {
   createToken: IJwtCreateToken,
@@ -145,6 +169,8 @@ type IJwtTypes = {
 
 
 export { IUserExistsFn };
+
+export { ICompanyExistsFn };
 
 export { IQueueRes, IQueueArgs };
 

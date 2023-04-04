@@ -10,7 +10,7 @@ import { IJwtTypes } from "../utils/types.js";
 // Constants
 import { CONSTANTS } from "../utils/constants.js"
 
-const { sign, verify } = jsonwebtoken
+const { sign, verify, decode } = jsonwebtoken
 
 
 /**
@@ -41,15 +41,31 @@ class JWTService {
         let decodedData: JwtPayload | string;
 
         try {
-            decodedData = verify(token, envConfig.JWT_SECRET_KEY)
-            return { decodedData };
+            decodedData = verify(token, envConfig.JWT_SECRET_KEY) as any
+            return { decodedData: decodedData as any };
         } catch (err: any) {
-            error = err?.message ?? CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG;
+            error = err;
             if (error)
                 return { error }
         }
 
         return { error: CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG }
+    }
+
+    static invalidateToken(token: string) {
+
+        const fiveYears = 5;
+        const payload = decode(token);
+        const newExpiration = new Date();
+        newExpiration.setDate(newExpiration.getFullYear() - fiveYears);
+        
+        if (payload && typeof payload === "object") {
+            sign({
+                ...payload,
+                exp: newExpiration.getTime()
+            }, envConfig.JWT_SECRET_KEY);
+        }
+
     }
 
 }

@@ -30,7 +30,17 @@ const connectMongoDB: IConnectToDbFn = async () => {
       CONSTANTS.TABLES.USERS
     );
 
+    const companiesCollection: mongoTypes.Collection = db.collection(
+      CONSTANTS.TABLES.COMPANIES
+    );
+
+    const jobsCollection: mongoTypes.Collection = db.collection(
+      CONSTANTS.TABLES.JOBS
+    );
+
     collections.users = usersCollection;
+    collections.companies = companiesCollection;
+    collections.jobs = jobsCollection;
 
     console.log("MongoDb database connected");
 

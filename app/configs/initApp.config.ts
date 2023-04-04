@@ -2,9 +2,12 @@
 import cors from "cors";
 import Express, { json } from "express";
 import * as express from "express";
+
+// Configs
 import { envConfig } from "./env.config.js";
 
-// Third party
+// Constants
+import { CONSTANTS } from "../utils/constants.js";
 
 // Configs
 import connectMongoDB from "./mongo.config.js";
@@ -14,6 +17,7 @@ import { routers } from "../routes/index.routes.js";
 
 // Middleware imports
 import { errorHandlerMiddleware } from "../middlewares/errorHandler.middleware.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 // Paths
 import { multerUploadPath } from "./multer.config.js";
@@ -30,7 +34,7 @@ const initApp = async () => {
   // Constants
   const app = express.default();
   const APP_PORT = envConfig?.APP_PORT ? Number(envConfig.APP_PORT) : 3001;
-  
+
   // Middlewares
   app.use(cors());
   app.use(json());
@@ -40,10 +44,15 @@ const initApp = async () => {
   app.use(routers.expressRouter)
 
   // Listeners
-  app.listen(APP_PORT);
+  app.listen(APP_PORT, () => {
+    console.log("\n".concat(CONSTANTS.APP_LOG_MESSAGES.SERVER_LISTENING))
+  });
 
   // Routes that need db, eg: user router
+  app.use("/job", routers.jobRouter);
   app.use("/user", routers.userRouter);
+  app.use("/cloud", routers.cloudRouter);
+  app.use("/company", authMiddleware, routers.companyRouter);
 
   // Middleware
   app.use(errorHandlerMiddleware);
