@@ -300,11 +300,21 @@ const getJob = async (
                 $unwind: "$user"
             },
             {
+                $addFields: {
+                    user_id: "$user._id",
+                    user_name: "$user.name",
+                    user_phone: "$user.phone",
+                    user_email: "$user.email",
+                    company_name: "$company.company_name",
+                    company_location: "$company.company_location",
+                }
+            },
+            {
                 $project: {
+                    "user": 0,
+                    "deleted": 0,
+                    "company": 0,
                     "company_id": 0,
-                    "company.deleted": 0,
-                    "company.user_id": 0,
-                    "user.password": 0,
                 }
             }]).toArray();
 
