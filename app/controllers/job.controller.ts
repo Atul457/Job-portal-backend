@@ -236,7 +236,6 @@ const getJobsOfCompany = async (
         res.json(responseToSend);
 
     } catch (error) {
-        console.log(error)
         next(error)
     }
 
@@ -297,8 +296,7 @@ const getJobs = async (
             { $skip: limit * page > 1 ? page - 1 : page },
             {
                 $sort: {
-                    created_at: order === "asc" ? 1 : -1,
-                    updated_at: order === "asc" ? 1 : -1
+                    created_at: order === "asc" ? 1 : -1
                 }
             },
             { $limit: limit },
@@ -319,7 +317,7 @@ const getJobs = async (
                         $not: {
                             $eq: true
                         }
-                    },
+                    }
                 }
             },
             {
@@ -382,7 +380,6 @@ const getJobs = async (
         res.json(responseToSend);
 
     } catch (error) {
-        console.log(error)
         next(error)
     }
 
@@ -449,7 +446,6 @@ const getApplicantsOfJob = async (
 
 
     } catch (error) {
-        console.log(error)
         next(error)
     }
 
@@ -469,6 +465,9 @@ const getJob = async (
         if (error) throw error;
 
         const job_id = req.params.jobId;
+        const { _id: user_id } = req.body;
+
+        console.log(user_id)
 
         const job = await collections.jobs?.aggregate([
             {
@@ -516,6 +515,7 @@ const getJob = async (
                     user_email: "$user.email",
                     company_name: "$company.company_name",
                     company_location: "$company.company_location",
+                    is_my_job: { $cond: [{ $eq: ["$user._id", new ObjectId(user_id)] }, true, false] }
                 }
             },
             {
@@ -722,7 +722,6 @@ const deleteJob = async (
         throw new Error(RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
 
     } catch (error) {
-        console.log(error)
         next(error)
     }
 

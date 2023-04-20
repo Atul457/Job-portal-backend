@@ -9,7 +9,7 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 const jobRouter = express.Router();
 
 // Routes
-jobRouter.get("/getJob/:jobId", jobController.getJob);
+jobRouter.get("/getJob/:jobId", authMiddleware, jobController.getJob);
 jobRouter.get("/getMyJob/:jobId", authMiddleware, jobController.getMyJob);
 jobRouter.get("/getJobsOfCompany/:companyId", authMiddleware, jobController.getJobsOfCompany);
 

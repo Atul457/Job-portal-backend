@@ -47,6 +47,7 @@ const initApp = () => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/user", routers.userRouter);
     app.use("/cloud", routers.cloudRouter);
     app.use("/company", authMiddleware, routers.companyRouter);
+    app.use("/notification", authMiddleware, routers.notificationRouter);
     // Middleware
     app.use(errorHandlerMiddleware);
 });

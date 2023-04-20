@@ -28,10 +28,12 @@ const connectMongoDB = () => __awaiter(void 0, void 0, void 0, function* () {
         const companiesCollection = db.collection(CONSTANTS.TABLES.COMPANIES);
         const jobsCollection = db.collection(CONSTANTS.TABLES.JOBS);
         const appliedJobsCollection = db.collection(CONSTANTS.TABLES.JOBS_APPLIED);
+        const notificationsCollection = db.collection(CONSTANTS.TABLES.NOTIFICATIONS);
         collections.jobs = jobsCollection;
         collections.users = usersCollection;
         collections.companies = companiesCollection;
         collections.jobsApplied = appliedJobsCollection;
+        collections.notifications = notificationsCollection;
         console.log("MongoDb database connected");
         return { status: true };
     }
