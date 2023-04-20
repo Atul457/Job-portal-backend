@@ -6,6 +6,7 @@ import { jobRouter } from "./job.routes.js";
 import { userRouter } from "./user.routes.js";
 import { cloudRouter } from "./cloud.routes.js";
 import { companyRouter } from "./company.routes.js";
+import { notificationRouter } from "./notification.routes.js";
 
 // Constants imports
 import { CONSTANTS } from "../utils/constants.js";
@@ -24,6 +25,7 @@ const routers = {
   cloudRouter,
   expressRouter,
   companyRouter,
+  notificationRouter,
   jobRouter
 };
 

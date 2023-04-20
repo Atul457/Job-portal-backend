@@ -13,6 +13,8 @@ const RESPONSE_MESSAGES = {
     LOGGED_OUT: "Logged out successfully",
     INVALID_DATA_SENT: "Invalid data sent",
     COMPANY_NOT_FOUND: "Company not found",
+    JOB_APPLIED: "Job applied successfully",
+    JOB_UPDATED: "Job updated successfully",
     JOB_DELETED: "Job deleted successfully",
     JOB_CREATED: "Job created successfully",
     INVALID_USER: "You are not a valid user",
@@ -24,6 +26,8 @@ const RESPONSE_MESSAGES = {
     COMPANY_CREATED: "Company created successfully",
     COMPANY_UPDATED: "Company updated successfully",
     PASSWORD_UPDATED: "Password updated successfully",
+    JOB_NOT_BELONGS_TO_YOU: "This job doesn't belongs to you",
+    JOB_ALREADY_APPLIED: "Your already have applied for the job",
     INVALID_AUTHORIZATION_HEADER: "Authorization header is invalid",
     AUTHORIZATION_HEADER_NOT_SENT: "Authorization header not sent",
     USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL: "User already exists same email",
@@ -53,9 +57,10 @@ const FILE_EXTENSIONS = {
     WEBP_WITH_DOT: ".webp"
 };
 const TABLES = {
+    JOBS: "jobs",
     USERS: "users",
     COMPANIES: "companies",
-    JOBS: "jobs"
+    JOBS_APPLIED: "jobsApplied"
 };
 export const CONSTANTS = {
     APP_LOG_MESSAGES,

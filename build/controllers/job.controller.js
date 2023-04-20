@@ -64,8 +64,51 @@ const createJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         next(error);
     }
 });
+const applyForJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b, _c, _d;
+    try {
+        const { error } = JOB_SCHEMAS.getJob.validate(req.params);
+        if (error)
+            throw error;
+        const jobId = req.params.jobId;
+        const { _id: user_id } = req.body;
+        const job = yield ((_b = collections.jobs) === null || _b === void 0 ? void 0 : _b.findOne({
+            _id: new ObjectId(jobId)
+        }));
+        if (!job)
+            throw ErrorHandlingService.userNotFound({
+                message: CONSTANTS.RESPONSE_MESSAGES.JOB_NOT_FOUND
+            });
+        const applyForJobDoc = {
+            job_id: new ObjectId(jobId),
+            user_id: new ObjectId(user_id),
+            created_at: new Date(Date.now()).toUTCString(),
+            updated_at: new Date(Date.now()).toUTCString()
+        };
+        const alreadyApplied = yield ((_c = collections.jobsApplied) === null || _c === void 0 ? void 0 : _c.findOne({
+            user_id,
+            job_id: new ObjectId(jobId)
+        }));
+        if (alreadyApplied)
+            throw ErrorHandlingService.unAuthorized({
+                message: CONSTANTS.RESPONSE_MESSAGES.JOB_ALREADY_APPLIED
+            });
+        const applied = yield ((_d = collections.jobsApplied) === null || _d === void 0 ? void 0 : _d.insertOne(applyForJobDoc));
+        if (!(applied === null || applied === void 0 ? void 0 : applied.acknowledged))
+            throw new Error(CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
+        const responseToSend = apiUtils.generateRes({
+            status: true,
+            statusCode: 200,
+            message: CONSTANTS.RESPONSE_MESSAGES.JOB_APPLIED
+        });
+        res.json(responseToSend);
+    }
+    catch (error) {
+        next(error);
+    }
+});
 const getJobsOfCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _e, _f;
     try {
         const { error } = COMPANY_SCHEMAS.getCompanySchema.validate({
             company_id: req.params.companyId
@@ -79,7 +122,7 @@ const getJobsOfCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             throw ErrorHandlingService.unAuthorized({
                 message: RESPONSE_MESSAGES.COMPANY_NOT_FOUND
             });
-        const jobs = (_c = yield ((_b = collections.jobs) === null || _b === void 0 ? void 0 : _b.find({
+        const jobs = (_f = yield ((_e = collections.jobs) === null || _e === void 0 ? void 0 : _e.find({
             company_id: new ObjectId(company_id),
             deleted: {
                 $not: {
@@ -90,7 +133,7 @@ const getJobsOfCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             projection: {
                 company_id: 0
             }
-        }).toArray())) !== null && _c !== void 0 ? _c : [];
+        }).toArray())) !== null && _f !== void 0 ? _f : [];
         const responseToSend = apiUtils.generateRes({
             status: true,
             statusCode: 200,
@@ -104,7 +147,7 @@ const getJobsOfCompany = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
 });
 const getJobs = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
+    var _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
     let q = null;
     let page = 1;
     let limit = 20;
@@ -115,19 +158,21 @@ const getJobs = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         const { error } = PAGINATION_SCHEMAS.paginatedSearch.validate(req.query);
         if (error)
             throw error;
-        q = ((_e = (_d = req.query) === null || _d === void 0 ? void 0 : _d.q) !== null && _e !== void 0 ? _e : q);
-        order = ((_g = (_f = req.query) === null || _f === void 0 ? void 0 : _f.order) !== null && _g !== void 0 ? _g : order);
-        page = parseInt(((_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.page) !== null && _j !== void 0 ? _j : page));
-        limit = parseInt(((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.limit) !== null && _l !== void 0 ? _l : limit));
-        if ((_m = req.query) === null || _m === void 0 ? void 0 : _m.ls) {
-            lowestSalary = parseInt(((_o = req.query) === null || _o === void 0 ? void 0 : _o.ls));
+        const { _id: user_id } = req.body;
+        q = ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.q) !== null && _h !== void 0 ? _h : q);
+        order = ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.order) !== null && _k !== void 0 ? _k : order);
+        page = parseInt(((_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.page) !== null && _m !== void 0 ? _m : page));
+        limit = parseInt(((_p = (_o = req.query) === null || _o === void 0 ? void 0 : _o.limit) !== null && _p !== void 0 ? _p : limit));
+        if ((_q = req.query) === null || _q === void 0 ? void 0 : _q.ls) {
+            lowestSalary = parseInt(((_r = req.query) === null || _r === void 0 ? void 0 : _r.ls));
         }
-        if ((_p = req.query) === null || _p === void 0 ? void 0 : _p.hs) {
-            highestSalary = parseInt(((_q = req.query) === null || _q === void 0 ? void 0 : _q.hs));
+        if ((_s = req.query) === null || _s === void 0 ? void 0 : _s.hs) {
+            highestSalary = parseInt(((_t = req.query) === null || _t === void 0 ? void 0 : _t.hs));
         }
         if (page < 1)
             page = 1;
-        const jobs = (_s = yield ((_r = collections.jobs) === null || _r === void 0 ? void 0 : _r.aggregate([
+        console.log({ user_id });
+        const jobs = (_v = yield ((_u = collections.jobs) === null || _u === void 0 ? void 0 : _u.aggregate([
             {
                 $match: Object.assign(Object.assign({ deleted: {
                         $not: {
@@ -146,11 +191,75 @@ const getJobs = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
             },
             { $limit: limit },
             {
-                $project: {
-                    company_id: 0
+                $lookup: {
+                    from: CONSTANTS.TABLES.COMPANIES,
+                    localField: "company_id",
+                    foreignField: "_id",
+                    as: "company"
                 }
-            }
-        ]).toArray())) !== null && _s !== void 0 ? _s : [];
+            },
+            {
+                $unwind: "$company"
+            },
+            {
+                $match: {
+                    "company.deleted": {
+                        $not: {
+                            $eq: true
+                        }
+                    },
+                }
+            },
+            {
+                $addFields: {
+                    company_name: "$company.company_name",
+                    company_location: "$company.company_location"
+                }
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.JOBS_APPLIED,
+                    let: {
+                        jobId: "$_id", userId: new ObjectId(user_id)
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$user_id", "$$userId"] },
+                                        { $eq: ["$job_id", "$$jobId"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "job_applied"
+                }
+            },
+            {
+                $addFields: {
+                    job_applied: { $cond: [{ $gt: [{ $size: "$job_applied" }, 0] }, true, false] }
+                }
+            },
+            {
+                $match: {
+                    "job_applied": {
+                        $not: {
+                            $eq: true
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    "company": 0,
+                    "deleted": 0,
+                    "company_id": 0,
+                    "job_applied": 0
+                }
+            },
+        ]).toArray())) !== null && _v !== void 0 ? _v : [];
         const responseToSend = apiUtils.generateRes({
             status: true,
             statusCode: 200,
@@ -163,14 +272,58 @@ const getJobs = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         next(error);
     }
 });
-const getJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _t, _u;
+const getApplicantsOfJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _w;
     try {
         const { error } = JOB_SCHEMAS.getJob.validate(req.params);
         if (error)
             throw error;
         const job_id = req.params.jobId;
-        const job = yield ((_t = collections.jobs) === null || _t === void 0 ? void 0 : _t.aggregate([
+        const { _id: user_id } = req.body;
+        const jobBelongsToUser = yield findJob(user_id, job_id);
+        const jobDoesNotBelongsToUser = !jobBelongsToUser || (jobBelongsToUser && !(jobBelongsToUser === null || jobBelongsToUser === void 0 ? void 0 : jobBelongsToUser.length));
+        if (jobDoesNotBelongsToUser)
+            throw ErrorHandlingService.unAuthorized({
+                message: RESPONSE_MESSAGES.JOB_NOT_BELONGS_TO_YOU
+            });
+        const applicants = yield ((_w = collections.jobsApplied) === null || _w === void 0 ? void 0 : _w.aggregate([
+            {
+                $match: {
+                    job_id: new ObjectId(job_id)
+                }
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.USERS,
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "applicant"
+                }
+            },
+            {
+                $unwind: "$applicant"
+            },
+            {
+                $project: {
+                    applicant: 1
+                }
+            }
+        ]).toArray());
+        res.json(applicants);
+    }
+    catch (error) {
+        console.log(error);
+        next(error);
+    }
+});
+const getJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _x, _y;
+    try {
+        const { error } = JOB_SCHEMAS.getJob.validate(req.params);
+        if (error)
+            throw error;
+        const job_id = req.params.jobId;
+        const job = yield ((_x = collections.jobs) === null || _x === void 0 ? void 0 : _x.aggregate([
             {
                 $match: {
                     _id: new ObjectId(job_id),
@@ -209,11 +362,21 @@ const getJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
                 $unwind: "$user"
             },
             {
+                $addFields: {
+                    user_id: "$user._id",
+                    user_name: "$user.name",
+                    user_phone: "$user.phone",
+                    user_email: "$user.email",
+                    company_name: "$company.company_name",
+                    company_location: "$company.company_location",
+                }
+            },
+            {
                 $project: {
+                    "user": 0,
+                    "deleted": 0,
+                    "company": 0,
                     "company_id": 0,
-                    "company.deleted": 0,
-                    "company.user_id": 0,
-                    "user.password": 0,
                 }
             }
         ]).toArray());
@@ -222,7 +385,7 @@ const getJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
                 message: RESPONSE_MESSAGES.JOB_NOT_FOUND
             });
         // Increment review
-        yield ((_u = collections.jobs) === null || _u === void 0 ? void 0 : _u.findOneAndUpdate({
+        yield ((_y = collections.jobs) === null || _y === void 0 ? void 0 : _y.findOneAndUpdate({
             _id: new ObjectId(job_id)
         }, {
             $inc: {
@@ -241,13 +404,13 @@ const getJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 const getMyJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _v;
+    var _z;
     try {
         const { error } = JOB_SCHEMAS.getJob.validate(req.params);
         if (error)
             throw error;
         const job_id = req.params.jobId;
-        const job = yield ((_v = collections.jobs) === null || _v === void 0 ? void 0 : _v.findOne({
+        const job = yield ((_z = collections.jobs) === null || _z === void 0 ? void 0 : _z.findOne({
             _id: new ObjectId(job_id)
         }, {
             projection: {
@@ -270,7 +433,7 @@ const getMyJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 const updateJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _w;
+    var _0;
     try {
         const { error } = JOB_SCHEMAS.updateJob.validate(req.body);
         if (error)
@@ -282,7 +445,7 @@ const updateJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             throw ErrorHandlingService.userNotFound({
                 message: RESPONSE_MESSAGES.JOB_NOT_FOUND
             });
-        const updateJob = yield ((_w = collections.jobs) === null || _w === void 0 ? void 0 : _w.findOneAndUpdate({
+        const updateJob = yield ((_0 = collections.jobs) === null || _0 === void 0 ? void 0 : _0.findOneAndUpdate({
             _id: new ObjectId(job_id)
         }, {
             $set: Object.assign(Object.assign(Object.assign(Object.assign({}, (job_name && { job_name })), (job_salary && { job_salary })), (job_description && { job_description })), { updated_at: new Date(Date.now()).toUTCString() })
@@ -299,7 +462,8 @@ const updateJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         const responseToSend = apiUtils.generateRes({
             status: true,
             statusCode: 200,
-            data: updateJob.value
+            data: updateJob.value,
+            message: RESPONSE_MESSAGES.JOB_UPDATED
         });
         return res.json(responseToSend);
     }
@@ -308,7 +472,7 @@ const updateJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 const deleteJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _x;
+    var _1;
     try {
         const { error } = JOB_SCHEMAS.deleteJob.validate(req.body);
         if (error)
@@ -320,7 +484,7 @@ const deleteJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             throw ErrorHandlingService.userNotFound({
                 message: RESPONSE_MESSAGES.JOB_NOT_FOUND
             });
-        const result = yield ((_x = collections.jobs) === null || _x === void 0 ? void 0 : _x.updateOne({
+        const result = yield ((_1 = collections.jobs) === null || _1 === void 0 ? void 0 : _1.updateOne({
             _id: new ObjectId(job_id),
             deleted: {
                 $not: {
@@ -356,8 +520,8 @@ const deleteJob = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
 });
 const companyExists = (company_id, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _y;
-    const company = yield ((_y = collections.companies) === null || _y === void 0 ? void 0 : _y.findOne({
+    var _2;
+    const company = yield ((_2 = collections.companies) === null || _2 === void 0 ? void 0 : _2.findOne({
         _id: new ObjectId(company_id),
         user_id: new ObjectId(userId),
         deleted: {
@@ -372,8 +536,8 @@ const companyExists = (company_id, userId) => __awaiter(void 0, void 0, void 0, 
     };
 });
 const findJob = (user_id, job_id) => __awaiter(void 0, void 0, void 0, function* () {
-    var _z;
-    const job = yield ((_z = collections.jobs) === null || _z === void 0 ? void 0 : _z.aggregate([
+    var _3;
+    const job = yield ((_3 = collections.jobs) === null || _3 === void 0 ? void 0 : _3.aggregate([
         {
             $match: {
                 _id: new ObjectId(job_id),
@@ -438,6 +602,8 @@ export const jobController = {
     createJob,
     updateJob,
     deleteJob,
+    applyForJob,
     getJobsOfCompany,
+    getApplicantsOfJob
 };
 //# sourceMappingURL=job.controller.js.map

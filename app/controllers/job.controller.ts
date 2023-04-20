@@ -17,6 +17,7 @@ import { ErrorHandlingService } from "../services/errorHandler.service.js";
 import { apiUtils } from "../utils/api.util.js";
 import { ObjectId } from "mongodb";
 import { ICompanyExistsFn } from "../utils/types.js";
+import { notificationController } from "./notification.controller.js";
 
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,6 +89,103 @@ const createJob = async (
     }
 
 }
+
+
+const applyForJob = async (
+    req: Express.Request,
+    res: Express.Response,
+    next: Express.NextFunction
+) => {
+
+    try {
+        const { error } = JOB_SCHEMAS.getJob.validate(req.params);
+
+        if (error) throw error;
+
+        const jobId = req.params.jobId;
+        const { _id: user_id } = req.body;
+
+        const jobOwner = await collections.jobs?.aggregate([
+            {
+                $match: {
+                    _id: new ObjectId(jobId)
+                }
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.COMPANIES,
+                    localField: "company_id",
+                    foreignField: "_id",
+                    as: "company"
+                }
+            },
+            {
+                $unwind: "$company"
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.USERS,
+                    localField: "company.user_id",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: "$user"
+            },
+            {
+                $replaceRoot: { newRoot: "$user" }
+            }
+        ]).toArray();
+
+        if (!jobOwner)
+            throw ErrorHandlingService.userNotFound({
+                message: CONSTANTS.RESPONSE_MESSAGES.JOB_NOT_FOUND
+            });
+
+        const applyForJobDoc = {
+            job_id: new ObjectId(jobId),
+            user_id: new ObjectId(user_id),
+            created_at: new Date(Date.now()).toUTCString(),
+            updated_at: new Date(Date.now()).toUTCString()
+        };
+
+        const alreadyApplied = await collections.jobsApplied?.findOne({
+            user_id: new ObjectId(user_id),
+            job_id: new ObjectId(jobId)
+        });
+
+        if (alreadyApplied)
+            throw ErrorHandlingService.unAuthorized({
+                message: CONSTANTS.RESPONSE_MESSAGES.JOB_ALREADY_APPLIED
+            })
+
+        const applied = await collections.jobsApplied?.insertOne(applyForJobDoc);
+
+        if (!applied?.acknowledged)
+            throw new Error(CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
+
+        if (jobOwner[0]._id == user_id)
+            throw ErrorHandlingService.unAuthorized({
+                message: CONSTANTS.RESPONSE_MESSAGES.CANT_APPLY_TO_OWN_JOB
+            });
+
+        await notificationController.sendNotification(jobOwner[0]._id, jobId);
+
+        const responseToSend = apiUtils.generateRes({
+            status: true,
+            statusCode: 200,
+            message: CONSTANTS.RESPONSE_MESSAGES.JOB_APPLIED
+        });
+
+        res.json(responseToSend);
+
+    } catch (error) {
+        next(error);
+    }
+
+}
+
 
 const getJobsOfCompany = async (
     req: Express.Request,
@@ -162,19 +260,18 @@ const getJobs = async (
         const { error } = PAGINATION_SCHEMAS.paginatedSearch.validate(req.query);
 
         if (error) throw error;
+        const { _id: user_id } = req.body;
 
         q = (req.query?.q ?? q) as string;
         order = (req.query?.order ?? order) as string;
         page = parseInt((req.query?.page ?? page) as string);
         limit = parseInt((req.query?.limit ?? limit) as string);
 
-        if (req.query?.ls) {
+        if (req.query?.ls)
             lowestSalary = parseInt((req.query?.ls) as string);
-        }
 
-        if (req.query?.hs) {
+        if (req.query?.hs)
             highestSalary = parseInt((req.query?.hs) as string);
-        }
 
         if (page < 1) page = 1;
 
@@ -217,9 +314,53 @@ const getJobs = async (
                 $unwind: "$company"
             },
             {
+                $match: {
+                    "company.deleted": {
+                        $not: {
+                            $eq: true
+                        }
+                    },
+                }
+            },
+            {
                 $addFields: {
                     company_name: "$company.company_name",
                     company_location: "$company.company_location"
+                }
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.JOBS_APPLIED,
+                    let: {
+                        jobId: "$_id", userId: new ObjectId(user_id)
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$user_id", "$$userId"] },
+                                        { $eq: ["$job_id", "$$jobId"] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "job_applied"
+                }
+            },
+            {
+                $addFields: {
+                    job_applied: { $cond: [{ $gt: [{ $size: "$job_applied" }, 0] }, true, false] }
+                }
+            },
+            {
+                $match: {
+                    "job_applied": {
+                        $not: {
+                            $eq: true
+                        }
+                    }
                 }
             },
             {
@@ -227,6 +368,7 @@ const getJobs = async (
                     "company": 0,
                     "deleted": 0,
                     "company_id": 0,
+                    "job_applied": 0
                 }
             },
         ]).toArray() ?? [];
@@ -238,6 +380,73 @@ const getJobs = async (
         })
 
         res.json(responseToSend);
+
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+
+}
+
+
+const getApplicantsOfJob = async (
+    req: Express.Request,
+    res: Express.Response,
+    next: Express.NextFunction
+) => {
+
+    try {
+
+        const { error } = JOB_SCHEMAS.getJob.validate(req.params);
+
+        if (error) throw error;
+
+        const job_id = req.params.jobId;
+        const { _id: user_id } = req.body;
+
+        const jobBelongsToUser = await findJob(user_id, job_id);
+        const jobDoesNotBelongsToUser = !jobBelongsToUser || (jobBelongsToUser && !jobBelongsToUser?.length);
+
+        if (jobDoesNotBelongsToUser)
+            throw ErrorHandlingService.unAuthorized({
+                message: RESPONSE_MESSAGES.JOB_NOT_BELONGS_TO_YOU
+            })
+
+        const applicants = await collections.jobsApplied?.aggregate([
+            {
+                $match: {
+                    job_id: new ObjectId(job_id)
+                }
+            },
+            {
+                $lookup: {
+                    from: CONSTANTS.TABLES.USERS,
+                    localField: "user_id",
+                    foreignField: "_id",
+                    as: "applicant"
+                }
+            },
+            {
+                $unwind: "$applicant"
+            },
+            {
+                $replaceRoot: { newRoot: "$applicant" }
+            },
+            {
+                $project: {
+                    password: 0
+                }
+            }
+        ]).toArray();
+
+        const responseToSend = apiUtils.generateRes({
+            status: true,
+            statusCode: 200,
+            data: applicants
+        });
+
+        res.json(responseToSend);
+
 
     } catch (error) {
         console.log(error)
@@ -445,7 +654,8 @@ const updateJob = async (
         const responseToSend = apiUtils.generateRes({
             status: true,
             statusCode: 200,
-            data: updateJob.value
+            data: updateJob.value,
+            message: RESPONSE_MESSAGES.JOB_UPDATED
         })
 
         return res.json(responseToSend);
@@ -606,5 +816,7 @@ export const jobController = {
     createJob,
     updateJob,
     deleteJob,
+    applyForJob,
     getJobsOfCompany,
+    getApplicantsOfJob
 }

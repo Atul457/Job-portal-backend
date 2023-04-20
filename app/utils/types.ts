@@ -86,9 +86,11 @@ type IQueueArgs = {
 //#########################//
 
 type IMongoCollection = {
+  jobs?: mongoTypes.Collection;
   users?: mongoTypes.Collection;
   companies?: mongoTypes.Collection;
-  jobs?: mongoTypes.Collection;
+  jobsApplied?: mongoTypes.Collection;
+  notifications?: mongoTypes.Collection;
 };
 
 type IConnectToDbFn = () => Promise<{ status: boolean; message?: string }>;

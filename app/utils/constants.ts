@@ -14,6 +14,8 @@ const RESPONSE_MESSAGES = {
   LOGGED_OUT: "Logged out successfully",
   INVALID_DATA_SENT: "Invalid data sent",
   COMPANY_NOT_FOUND: "Company not found",
+  JOB_APPLIED: "Job applied successfully",
+  JOB_UPDATED: "Job updated successfully",
   JOB_DELETED: "Job deleted successfully",
   JOB_CREATED: "Job created successfully",
   INVALID_USER: "You are not a valid user",
@@ -25,8 +27,11 @@ const RESPONSE_MESSAGES = {
   COMPANY_CREATED: "Company created successfully",
   COMPANY_UPDATED: "Company updated successfully",
   PASSWORD_UPDATED: "Password updated successfully",
-  INVALID_AUTHORIZATION_HEADER: "Authorization header is invalid",
+  CANT_APPLY_TO_OWN_JOB: "You can't apply to your own job",
+  JOB_NOT_BELONGS_TO_YOU: "This job doesn't belongs to you",
+  JOB_ALREADY_APPLIED: "Your already have applied for the job",
   AUTHORIZATION_HEADER_NOT_SENT: "Authorization header not sent",
+  INVALID_AUTHORIZATION_HEADER: "Authorization header is invalid",
   USER_ALREADY_EXIST_WITH_EMAIL_WITH_EMAIL: "User already exists same email",
   USER_ALREADY_EXIST_WITH_EMAIL_WITH_PHONE: "User already exists same phone number",
   CAN_NOT_CREATE_COMPANY_USER_NOT_FOUND: "Unable to create company since you are not a authorized user",
@@ -58,9 +63,11 @@ const FILE_EXTENSIONS = {
 }
 
 const TABLES = {
+  JOBS: "jobs",
   USERS: "users",
   COMPANIES: "companies",
-  JOBS: "jobs"
+  JOBS_APPLIED: "jobsApplied",
+  NOTIFICATIONS: "notifications"
 };
 
 export const CONSTANTS = {
