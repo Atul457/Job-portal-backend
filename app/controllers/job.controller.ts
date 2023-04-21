@@ -170,7 +170,7 @@ const applyForJob = async (
                 message: CONSTANTS.RESPONSE_MESSAGES.CANT_APPLY_TO_OWN_JOB
             });
 
-        await notificationController.sendNotification(jobOwner[0]._id, jobId);
+        await notificationController.sendNotification(jobOwner[0]._id, user_id, jobId);
 
         const responseToSend = apiUtils.generateRes({
             status: true,

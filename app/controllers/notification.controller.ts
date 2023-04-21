@@ -15,15 +15,16 @@ import { ObjectId } from "mongodb";
  * @param message Message you want to send to the user
  * @info Insert data in notification table, else throws error 
  */
-const sendNotification = async (userId: string, jobId: string) => {
+const sendNotification = async (ownerId: string, userId: string, jobId: string) => {
 
     try {
         if (!userId)
             throw new Error(CONSTANTS.RESPONSE_MESSAGES.SOMETHING_WENT_WRONG);
 
         const res = await collections.notifications?.insertOne({
+            job_id: new ObjectId(jobId),
             user_id: new ObjectId(userId),
-            job_id: new ObjectId(jobId)
+            owner_id: new ObjectId(ownerId),
         });
 
         if (!res?.acknowledged)
@@ -50,12 +51,10 @@ const getMyNotifications = async (
 
         const { _id: user_id } = req.body;
 
-        console.log({ user_id })
-
         const notifications = await collections.notifications?.aggregate([
             {
                 $match: {
-                    user_id: new ObjectId(user_id)
+                    owner_id: new ObjectId(user_id)
                 }
             },
             {
